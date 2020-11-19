@@ -1,0 +1,10 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: shengyu-image
+  namespace: default
+spec:
+  type: image
+  params:
+    - name: url
+      value: nginx:1.14.2
