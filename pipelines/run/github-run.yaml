@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  generateName: github-pr-
+spec:
+  pipelineRef:
+    name: pipeline-test
+  resources:
+    - name: github-repo
+      resourceRef:
+        name: github-repo

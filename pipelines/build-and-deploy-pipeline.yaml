@@ -4,12 +4,9 @@ metadata:
   name: build-and-deploy-pipeline
 spec:
   resources:
-    - name: git-source
+    - name: github-repo
       type: git
   params:
-    - name: pathToContext
-      description: The path to the build context, used by Kaniko - within the workspace
-      default: src
     - name: pathToYamlFile
       description: The path to the yaml file to deploy within the git source
     - name: imageUrl
@@ -29,5 +26,5 @@ spec:
         value: "${params.imageTag}"
     resources:
       inputs:
-        - name: git-source
-          resource: git-source
+        - name: github-repo
+          resource: github-repo

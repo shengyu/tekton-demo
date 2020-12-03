@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  generateName: ngnix-pr-
+spec:
+  pipelineRef:
+    name: build-and-deploy-pipeline
+  resources:
+    - name: github-repo
+      resourceRef:
+        name: github-repo
+  params:
+    - name: pathToYamlFile
+      value: "deployments/nginx.yaml"
+    - name: imageUrl
+      value: "nginx"
+    - name: imageTag
+      value: "1.14.2"
+
