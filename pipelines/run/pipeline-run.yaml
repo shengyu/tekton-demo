@@ -1,19 +1,25 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: ngnix-pr-
+  generateName: shengyu-pr-
 spec:
   pipelineRef:
-    name: build-and-deploy-pipeline
-  resources:
-    - name: github-repo
-      resourceRef:
-        name: github-repo
+    name: kaniko-pipeline
   params:
-    - name: pathToYamlFile
-      value: "deployments/nginx.yaml"
-    - name: imageUrl
-      value: "nginx"
-    - name: imageTag
-      value: "1.14.2"
+    - name: git-url
+      value: "https://github.com/shengyu/hello"
+    - name: git-revision
+      value: "main"
+    - name: image-name
+      value: "usungu/hello:v0.0.2"
+    - name: path-to-image-context
+      value: "."
+    - name: path-to-dockerfile
+      value: "Dockerfile"
+  workspaces:
+    - name: git-source
+      persistentVolumeClaim:
+        claimName: shared-task-storage
+
+
 

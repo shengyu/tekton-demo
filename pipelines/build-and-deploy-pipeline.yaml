@@ -1,30 +1,39 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: build-and-deploy-pipeline
+  name: kaniko-pipeline
 spec:
-  resources:
-    - name: github-repo
-      type: git
   params:
-    - name: pathToYamlFile
-      description: The path to the yaml file to deploy within the git source
-    - name: imageUrl
-      description: Url of image repository
-    - name: imageTag
-      description: Tag to apply to the built image
+    - name: git-url
+    - name: git-revision
+    - name: image-name
+    - name: path-to-image-context
+    - name: path-to-dockerfile
+  workspaces:
+    - name: git-source
   tasks:
-  - name: deploy-to-cluster
-    taskRef:
-      name: deploy-using-kubectl
-    params:
-      - name: pathToYamlFile
-        value:  "${params.pathToYamlFile}"
-      - name: imageUrl
-        value: "${params.imageUrl}"
-      - name: imageTag
-        value: "${params.imageTag}"
-    resources:
-      inputs:
-        - name: github-repo
-          resource: github-repo
+    - name: fetch-from-git
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+      workspaces:
+        - name: output
+          workspace: git-source
+    - name: build-image
+      taskRef:
+        name: kaniko
+      params:
+        - name: IMAGE
+          value: $(params.image-name)
+        - name: CONTEXT
+          value: $(params.path-to-image-context)
+        - name: DOCKERFILE
+          value: $(params.path-to-dockerfile)
+      workspaces:
+        - name: source
+          workspace: git-source
+
