@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: results-pipeline-run
+spec:
+  serviceAccountName: buildpacks-service-account
+  pipelineSpec:
+    workspaces:
+      - name: source-ws
+      - name: cache-ws
+    tasks:
+      - name: fetch-repository
+        taskRef:
+          name: git-clone
+        workspaces:
+          - name: output
+            workspace: source-ws
+        params:
+          - name: url
+            value: https://github.com/shengyu/hello
+          - name: subdirectory
+            value: ""
+          - name: deleteExisting
+            value: "true"
+      - name: buildpacks
+        taskRef:
+          name: buildpacks
+        runAfter:
+          - fetch-repository
+        workspaces:
+          - name: source
+            workspace: source-ws
+          - name: cache
+            workspace: cache-ws
+        params:
+          - name: APP_IMAGE
+            value: usungu/hello
+          - name: BUILDER_IMAGE
+            value: gcr.io/buildpacks/builder:v1
+      - name: display-results
+        runAfter:
+          - buildpacks
+        taskSpec:
+          steps:
+            - name: print
+              image: docker.io/library/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6
+              script: |
+                #!/usr/bin/env bash
+                set -e
+                echo "Digest of created app image: $(params.DIGEST)"
+          params:
+            - name: DIGEST
+        params:
+          - name: DIGEST
+            value: $(tasks.buildpacks.results.APP_IMAGE_DIGEST)
+  workspaces:
+    - name: source-ws
+      subPath: source
+      persistentVolumeClaim:
+        claimName: results-ws-pvc
+    - name: cache-ws
+      subPath: cache
+      persistentVolumeClaim:
+        claimName: results-ws-pvc
