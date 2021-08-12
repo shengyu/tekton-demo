@@ -1,0 +1,62 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: example-2-pipeline
+spec:
+  params:
+    - name: git-url
+    - name: git-revision
+      default: "main"
+    - name: git-subdir
+      default: ""
+    - name: app-image
+    - name: builder-image
+    - name: yaml-path
+  workspaces:
+    - name: source-ws
+    - name: cache-ws
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: source-ws
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+        - name: subdirectory
+          value: $(params.git-subdir)
+        - name: deleteExisting
+          value: "true"
+    - name: buildpacks
+      taskRef:
+        name: buildpacks
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: source-ws
+        - name: cache
+          workspace: cache-ws
+      params:
+        - name: APP_IMAGE
+          value: $(params.app-image)
+        - name: BUILDER_IMAGE
+          value: $(params.builder-image)
+    - name: kubectl-apply
+      taskRef:
+        name: kubectl-apply
+      runAfter:
+        - buildpacks
+      workspaces:
+        - name: source
+          workspace: source-ws
+      params:
+        - name: yaml-path
+          value: $(params.yaml-path)
+        - name: app-image
+          value: $(params.app-image)
+      
