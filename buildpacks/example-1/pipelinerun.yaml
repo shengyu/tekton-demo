@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: example-1-pr
+spec:
+  serviceAccountName: buildpacks-service-account
+  pipelineRef:
+    name: example-1-pipeline
+  params:
+    - name: git-url
+      value: "https://github.com/shengyu/hello"
+    - name: git-revision
+      value: "main"
+    - name: git-subdir
+      value: ""
+    - name: app-image
+      value: "usungu/hello"
+    - name: builder-image
+      value: "gcr.io/buildpacks/builder:v1"
+  workspaces:
+    - name: source-ws
+      subPath: source
+      persistentVolumeClaim:
+        claimName: results-ws-pvc
+    - name: cache-ws
+      subPath: cache
+      persistentVolumeClaim:
+        claimName: results-ws-pvc
