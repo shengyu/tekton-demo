@@ -5,12 +5,9 @@ metadata:
 spec:
   params:
     - name: yaml-path
-      description: "The path to the yaml file to deploy within the git source"
     - name: app-image
-      description: "Url of image repository"
   workspaces:
     - name: source
-      description: Directory where application source is located.
   steps:
     - name: update-yaml
       image: alpine
